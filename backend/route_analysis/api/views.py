@@ -75,15 +75,14 @@ def create_route_analysis(request: Request) -> Response:
     serializer.is_valid(raise_exception=True)
     values: dict[str, Any] = serializer.validated_data
 
-    use_fake = settings.DEBUG
-    if use_fake:
-        routing = FakeRoutingProvider()
-        weather = FakeWeatherProvider()
-    else:
-        routing = TomTomProvider(settings.TOMTOM_API_KEY, settings.TOMTOM_TIMEOUT_SECONDS)
-        weather = OpenMeteoProvider(settings.OPEN_METEO_TIMEOUT_SECONDS)
-
     try:
+        if settings.DEBUG:
+            routing = FakeRoutingProvider()
+            weather = FakeWeatherProvider()
+        else:
+            routing = TomTomProvider(settings.TOMTOM_API_KEY, settings.TOMTOM_TIMEOUT_SECONDS)
+            weather = OpenMeteoProvider(settings.OPEN_METEO_TIMEOUT_SECONDS)
+
         service = RouteAnalysisService(routing, weather)
         result = service.analyze(
             origin_query=values["origin"],
